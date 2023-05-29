@@ -31,6 +31,24 @@ using YearMonths, Test, Dates
     @test string(YearMonth("2-01")) == "2-01"
     @test string(YearMonth("201")) == "2-01"
     @test_throws ErrorException YearMonth("10")
+
+    @test string(YearMonth(Int8(1), 1)) == "1-01"
+    @test string(YearMonth(Int16(1), 1)) == "1-01"
+    @test string(YearMonth(Int32(1), 1)) == "1-01"
+    @test string(YearMonth(Int64(1), 1)) == "1-01"
+    @test string(YearMonth(Int128(1), 1)) == "1-01"
+    @test string(YearMonth(UInt8(1), 1)) == "1-01"
+    @test string(YearMonth(UInt16(1), 1)) == "1-01"
+    @test string(YearMonth(UInt32(1), 1)) == "1-01"
+    @test string(YearMonth(UInt64(1), 1)) == "1-01"
+    @test string(YearMonth(UInt128(1), 1)) == "1-01"
+    @test string(YearMonth(BigInt(1), 1)) == "1-01"
+    @test string(YearMonth(UInt8(typemax(Int8)) + 1, 1)) == "$(UInt8(typemax(Int8)) + 1)-01"
+    @test string(YearMonth(UInt16(typemax(Int16)) + 1, 1)) == "$(UInt16(typemax(Int16)) + 1)-01"
+    @test string(YearMonth(UInt32(typemax(Int32)) + 1, 1)) == "$(UInt32(typemax(Int32)) + 1)-01"
+    @test string(YearMonth(UInt64(typemax(Int64)) + 1, 1)) == "$(UInt64(typemax(Int64)) + 1)-01"
+    @test string(YearMonth(UInt128(typemax(Int128)) + 1, 1)) == "$(UInt128(typemax(Int128)) + 1)-01"
+
 end
 
 @testset "Math" begin
@@ -85,6 +103,20 @@ end
     ym = YearMonth(2018, 5)
     @test firstdayofmonth(ym) == Date(2018, 5, 1)
     @test lastdayofmonth(ym) == Date(2018, 5, 31)
+
+    @test convert(Int, YearMonth(2010, 1)) == 201001
+    @test convert(Int, YearMonth(-2010, 1)) == -201001
+    @test convert(Int, YearMonth(0, 1)) == 1
+    @test convert(Int, YearMonth(-1, 1)) == -101
+    @test convert(UInt, YearMonth(1999, 12)) == 199912
+    @test convert(Int32, YearMonth(-1999, 12)) == -199912
+    @test convert(UInt32, YearMonth(-1999, 12)) == -199912
+    @test convert(Signed, YearMonth(0, 1)) == Int8(1)
+    @test convert(Signed, YearMonth(Int16(typemax(Int8)) + 1, 1)) == (Int16(typemax(Int8)) + 1) * 100 + 1
+    @test convert(Signed, YearMonth(Int32(typemax(Int16)) + 1, 1)) == (Int32(typemax(Int16)) + 1) * 100 + 1
+    @test convert(Signed, YearMonth(Int64(typemax(Int32)) + 1, 1)) == (Int64(typemax(Int32)) + 1) * 100 + 1
+    @test convert(Signed, YearMonth(Int128(typemax(Int64)) + 1, 1)) == (Int128(typemax(Int64)) + 1) * 100 + 1
+    @test convert(Signed, YearMonth(BigInt(typemax(Int128)) + 1, 1)) == (BigInt(typemax(Int128)) + 1) * 100 + 1
 end
 
 @testset "Tutorial" begin

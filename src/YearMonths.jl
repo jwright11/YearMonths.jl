@@ -14,13 +14,13 @@ Example:
 julia> ym = YearMonth(2018, 12) # represents December of year 2018.
 ```
 """
-struct YearMonth
-    y::Int
-    m::Int
+struct YearMonth{T<:Signed}
+    y::T
+    m::UInt8
 
-    function YearMonth(y::Int, m::Int)
+    function YearMonth(y::Signed, m::Integer)
         @assert 1 <= m && m <= 12 "Month should be between 1 and 12."
-        return new(y, m)
+        return new{typeof(y)}(y, m)
     end
 end
 
@@ -50,7 +50,7 @@ function YearMonth(str::AbstractString)
 end
 
 YearMonth(ym::Integer) = YearMonth(string(ym))
-YearMonth(y::Integer, m::Integer) = YearMonth(Int(y), Int(m))
+YearMonth(y::Unsigned, m::Integer) = YearMonth(uint2int(y), m)
 
 Dates.year(ym::YearMonth) = ym.y
 Dates.month(ym::YearMonth) = ym.m
@@ -64,6 +64,7 @@ Creates a date based on the first day of the month.
 Dates.Date(ym::YearMonth) = Date(yearmonth(ym)...)
 
 Base.convert(::Type{Date}, ym::YearMonth) = Date(ym)
+Base.convert(::Type{<:Integer}, ym::YearMonth) = year(ym) * 100 + (signbit(year(ym)) ? -1 : 1) * month(ym)
 
 Base.:+(ym::YearMonth, p::Year) = YearMonth(ym.y + Dates.value(p), ym.m)
 Base.:-(ym::YearMonth, p::Year) = YearMonth(ym.y - Dates.value(p), ym.m)
@@ -82,12 +83,18 @@ Dates.firstdayofmonth(ym::YearMonth) = Date(ym)
 Dates.lastdayofmonth(ym::YearMonth) = lastdayofmonth(Date(ym))
 
 Base.string(ym::YearMonth) = "$(year(ym))-$(lpad(month(ym), 2, "0"))"
-Base.show(io::IO, ym::YearMonth) = print(io, "YearMonth(\"", string(ym), "\")")
+Base.show(io::IO, ym::YearMonth) = print(io, "YearMonth{", typeof(ym.y), "}(\"", string(ym), "\")")
 
 Base.:-(x::YearMonth, y::YearMonth) = Month(12 * (x.y - y.y) + x.m - y.m)
 
 @static if VERSION >= v"1.8"
     Base.Broadcast.broadcastable(x::YearMonth) = Ref(x)
 end
+
+uint2int(x::UInt8) = (x > typemax(Int8) ? Int16(x) : Int8(x))
+uint2int(x::UInt16) = (x > typemax(Int16) ? Int32(x) : Int16(x))
+uint2int(x::UInt32) = (x > typemax(Int32) ? Int64(x) : Int32(x))
+uint2int(x::UInt64) = (x > typemax(Int64) ? Int128(x) : Int64(x))
+uint2int(x::UInt128) = (x > typemax(Int128) ? BigInt(x) : Int128(x))
 
 end # module YearMonths
